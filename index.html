@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Quiz Game</title>
+</head>
+<body>
+    <div class='wrapper'>
+    <div class='frame'>
+        <div class='display'>
+            <span class="display-span"></span>
+        </div>
+        <div class="score-frame">
+            <div class="score-bars" data-bar="0"></div>
+            <div class="score-bars" data-bar="1"></div>
+            <div class="score-bars" data-bar="2"></div>
+            <div class="score-bars" data-bar="3"></div>
+            <div class="score-bars" data-bar="4"></div>
+            <div class="score-bars" data-bar="5"></div>
+            <div class="score-bars" data-bar="6"></div>
+            <div class="score-bars" data-bar="7"></div>
+            <div class="score-bars" data-bar="8"></div>
+            <div class="score-bars" data-bar="9"></div>
+        </div>
+        <div class='options'>
+            <div class='buttons'>
+                Option A
+            </div>
+            <div class='buttons'>
+                Option B
+            </div>
+            <div class='buttons'>
+                Option C
+            </div>
+            <div class='buttons'>
+                Option D
+            </div>            
+        </div>
+    </div>
+    </div>
+<style>
+    * {
+        box-sizing: border-box;
+        font-family: 'Raleway',sans-serif;
+
+    }
+
+    .wrapper {
+        width: 100%;
+        height: 100%;
+        border: 1px solid red;
+        position: absolute;
+        margin-left: auto;
+        margin-right: auto;
+        left: 0;
+        right: 0;
+
+    }
+
+    .frame {
+        display: flex;
+        min-width: 100%;
+        min-height: 100%;
+        flex-shrink: 0;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        border: 1px solid red;
+
+
+
+    }
+
+    .display {
+        display: flex;    
+        align-items:center;
+        justify-content:center;
+
+        width: 400px;
+        min-height: 100px;
+        height: auto;
+        font-size: 25px;
+        background-color: #d5eced;
+        border: 1px solid black;
+        border-radius: 9px;
+    } 
+
+    .display-span {
+        padding: 20px 8px 20px 8px;
+        text-align: center;
+    }
+
+    .score-frame {
+        margin: 2px 0px 2px 0px;
+        width: 400px; 
+        display: flex;
+        border-radius: 9px;
+        
+    }
+
+    .score-bars {
+        border: 0.4px solid grey;
+        width: 40px;
+        height: 20px;
+        border-radius: 9px;
+    }
+
+    .options {
+        display: flex;
+        flex-direction: column;
+        row-gap: 2px;
+        column-gap: 2px;
+    }
+
+    .buttons {
+        font-size: 20px;
+        width: 400px;
+        min-height: 70px;
+        height: auto;
+        background-color: #edf2f2;
+        border: 1px solid black;
+        border-radius: 9px;
+        display: flex;    
+        align-items:center;
+        justify-content:center;
+        cursor: pointer;
+    }
+
+
+    .orange {
+        transition: background-color 0.9s ease;
+        background-color: orange;
+    }
+
+    .green {
+        transition: background-color 0.9s ease;
+        background-color: green;
+    }
+
+    .red {
+        transition: background-color 0.9s ease;
+        background-color: red;
+    }
+
+    .blinking-green {
+        animation: blinkingBackground 1s infinite;
+    }
+    @keyframes blinkingBackground {
+        0%		{ background-color: #10c018;}
+        25%		{ background-color: #edf2f2;}
+        50%		{ background-color: #10c018;}
+        75%		{ background-color: #edf2f2;}
+        100%	{ background-color: #10c018;}
+    }
+
+</style>
+
+<script>
+    const sample = ['What is the capital of Japan?', 'Hanoi', 'Tokyo', 'Bangkok', 'Sidney'];
+    const display = document.querySelector('.display-span');
+    const buttons = Array.from(document.querySelectorAll('.buttons'));
+    const interval = 3000; //variable for color change duration
+    const scoreBars = Array.from(document.querySelectorAll('.score-bars'));
+    var score = 0; // save how many correct responses the user has
+    var index = 0; //saves the index of the current question
+    const answersAll = [];
+    
+    var obj;
+    async function questions() {
+            let response = await fetch('https://opentdb.com/api.php?amount=10&category=9&difficulty=medium&type=multiple')
+            obj = await response.json();
+            obj = await obj["results"];
+
+            // save question and display it in display
+            let answers = newQuestion(index);
+            console.log(obj);
+            correctAnswers(obj);
+            checkResponse(answers);
+
+    }
+
+    //run async function
+    questions(index);
+
+    function correctAnswers(obj) {
+        obj.forEach(question => {
+            let interim = question['incorrect_answers'].map(answer => [answer, 'incorrect']);
+            
+            interim.push([question['correct_answer'], 'correct']);
+            interim = shuffle(interim);
+            answersAll.push(interim);
+        })
+    }
+
+
+    // diplay question, update if new one is presented
+    function newQuestion(currentIndex) {
+        //display question
+        let question = obj[currentIndex]['question'];
+        display.innerHTML = question; 
+        //create array with incorrect responses and save 'incorrect' as value     
+
+
+        // fill buttons with text
+        buttons.forEach((button, i) => {
+            button.innerHTML = answersAll[currentIndex][i][0];
+        });
+        return answers;
+    }
+
+    // create a function that adds event listeners with timers
+    function checkResponse(answers) {
+        let clicks = 0; // this variable stores whether a button has already been clicked and subsequently disables the event listener
+        // assign correct response
+        let correctResponse;
+        
+        answers.forEach(answer => {
+            console.log(answer);
+            if (answer[1] == 'correct') {
+                correctResponse = answer[0];
+            }
+        });
+        //console.log(correctResponse);
+
+        var correctDiv; //save which div stores the correct response
+        buttons.forEach(button => {            
+            if (button.innerHTML == correctResponse) {
+                correctDiv = button;
+            }
+            button.addEventListener('click', function clicked() {
+                if (clicks != 0) {return} // check if a button has already been clicked
+                
+                clicks++;
+                index++;
+                // remove event listeners from all, once button has been clicked
+                if (this.innerHTML == correctResponse) {
+                    // ADD GREEN COLOR TO BUTTON, WAIT FOR A FEW SECONDS, CHANGE QUESTION!!!!!                   
+                    this.classList.add('orange');
+                    var div = this; // need to store this in a var for some reason
+                    setTimeout(function() {
+                        div.classList.remove('orange');
+                        div.classList.add('green');
+                       // scoreColor(index-1, 'correct');
+                        setTimeout(function() {
+                            if (index > 9) {return};
+                            div.classList.remove('green');
+                            clicks = 0;
+                            answers = newQuestion(index);
+                            console.log(answers);
+                            checkResponse(answers);
+                        }, interval);
+                    }, interval);
+                    
+                }
+                else {
+                    this.classList.add('orange');
+                    var div = this; // need to store this in a var for some reason
+                    
+                    setTimeout(function() {
+                        div.classList.remove('orange');
+                        div.classList.add('red');
+                        correctDiv.classList.add('blinking-green');
+                       // scoreColor(index-1, 'incorrect');
+                        setTimeout(function() {
+                            if (index > 9) {return};
+                            div.classList.remove('red');
+                            correctDiv.classList.remove('blinking-green');
+                            clicks = 0;
+                            answers = newQuestion(index);
+                            console.log(answers);
+                            checkResponse(answers);
+                        }, interval);
+                    }, interval);
+
+                }
+            });
+        })
+    }
+
+
+    function scoreColor(barIndex, isCorrect) {
+        
+        scoreBars.forEach(scoreBar => {
+            if (scoreBar.dataset.bar == barIndex && isCorrect == 'correct') {
+                scoreBar.style.backgroundColor = 'green';
+            }
+            else if (scoreBar.dataset.bar == barIndex  && isCorrect == 'incorrect') {
+                scoreBar.style.backgroundColor = 'red';
+            }
+        })
+    }
+
+
+
+    /**
+     * Shuffles array in place. ES6 version
+     * @param {Array} a items An array containing the items.
+     */
+    function shuffle(a) {
+        for (let i = a.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [a[i], a[j]] = [a[j], a[i]];
+        }
+        return a;
+    }   
+
+
+
+
+
+    // Event Listeners
+
+    
+
+</script>
+
+</body>
+
+</html>
