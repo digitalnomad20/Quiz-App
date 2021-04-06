@@ -199,11 +199,16 @@
         let question = obj[currentIndex]['question'];
         display.innerHTML = question; 
         //create array with incorrect responses and save 'incorrect' as value     
-
+        var answers = obj[currentIndex]['incorrect_answers'].map(answer => [answer, 'incorrect']);
+        
+        //append correct response with 'correct' as value
+        answers.push([obj[currentIndex]['correct_answer'], 'correct']);
+        // shuffle so that correct and incorrect are in random order
+        answers = shuffle(answers); 
 
         // fill buttons with text
         buttons.forEach((button, i) => {
-            button.innerHTML = answersAll[currentIndex][i][0];
+            button.innerHTML = answers[i][0];
         });
         return answers;
     }
